@@ -1,0 +1,7 @@
+*.log
+*.pid
+vendor
+.idea
+
+config.json
+.git
