@@ -7,8 +7,20 @@
     "base_address": "https://parts.team254.com",
     "gmail_user": "cheesyparts@gmail.com",
     "enable_wordpress_auth": true,
-    "hide_unused_fields": true
-    },
+    "hide_unused_fields": true,
+    "enable_oauth2": true,
+    "oauth2_btn_text": "Login in with SSO",
+    "client_id": "client-id",
+    "client_secret": "client-secret",
+    "authorization_endpoint": "",
+    "token_endpoint": "",
+    "userinfo_endpoint": "",
+    "scope": "openid profile email",
+    "userinfo_fields_email": "email",
+    "userinfo_fields_first_name": "given_name",
+    "userinfo_fields_last_name": "family_name",
+    "userinfo_fields_roles": "roles"
+  },
   "dev": {
     "db_password": "correcthorsebatterystaple",
     "gmail_password": "correcthorsebatterystaple",

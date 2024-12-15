@@ -11,6 +11,7 @@ require "json"
 require "pathological"
 require "pony"
 require "sinatra/base"
+require "rack/oauth2"
 
 require "models"
 
@@ -21,7 +22,7 @@ module CheesyParts
     # Enforce authentication for all routes except login and user registration.
     before do
       @user = User[session[:user_id]]
-      authenticate! unless ["/login", "/register"].include?(request.path)
+      authenticate! unless ["/login", "/register", "/login/oauth2", "/login/oauth2/callback"].include?(request.path)
     end
 
     def authenticate!
@@ -47,6 +48,65 @@ module CheesyParts
                                     :user_name => CheesyCommon::Config.gmail_user.split("@").first,
                                     :password => CheesyCommon::Config.gmail_password,
                                     :authentication => :plain, :domain => "localhost.localdomain" })
+      end
+    end
+
+    if CheesyCommon::Config.enable_oauth2
+      client = Rack::OAuth2::Client.new(
+        :identifier => CheesyCommon::Config.client_id,
+        :secret => CheesyCommon::Config.client_secret,
+        :redirect_uri => CheesyCommon::Config.base_address + '/login/oauth2/callback',
+        :authorization_endpoint => CheesyCommon::Config.authorization_endpoint,
+        :token_endpoint => CheesyCommon::Config.token_endpoint,
+      )
+
+      get "/login/oauth2" do
+        authorization_uri = client.authorization_uri(
+          scope: CheesyCommon::Config.scope,
+          state: session[:state]
+        )
+
+        redirect authorization_uri
+      end
+
+      get "/login/oauth2/callback" do
+        client.authorization_code = params[:code]
+
+        begin
+          token = client.access_token! :body
+        rescue => e
+          p e
+        end
+
+        begin 
+          response = token.get(CheesyCommon::Config.userinfo_endpoint)
+        rescue => e
+          p e.response.headers[:www_authenticate]
+        end
+
+        user_info = response.body
+
+        email = user_info[CheesyCommon::Config.userinfo_fields_email]
+        first_name = user_info[CheesyCommon::Config.userinfo_fields_first_name]
+        last_name = user_info[CheesyCommon::Config.userinfo_fields_last_name]
+        roles = user_info[CheesyCommon::Config.userinfo_fields_roles]
+
+        user = User.find_or_create(email: user_info['email']) do |u|
+          u.first_name = first_name
+          u.last_name = last_name
+          u.enabled = 0
+          u.permission = "readonly"
+          u.set_password(SecureRandom.hex(8)) if u.new?
+        end
+
+        user.first_name = first_name
+        user.last_name = last_name
+        user.enabled = roles.include?('viewer') ? 1 : 0
+        user.permission = roles.include?('admin') ? "admin" : roles.include?('editor') ? "editor" : "readonly"
+        user.save
+
+        session[:user_id] = user.id
+        redirect "/"
       end
     end
 

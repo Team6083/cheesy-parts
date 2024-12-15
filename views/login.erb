@@ -11,6 +11,13 @@
         </a>
         <hr>
       <% end %>
+      <% if CheesyCommon::Config.enable_oauth2 %>
+        <a href="/login/oauth2"
+            class="btn btn-primary btn-block">
+          <%= CheesyCommon::Config.oauth2_btn_text %>
+        </a>
+        <hr>
+      <% end %>
       <% if @alert %>
         <div class="alert alert-error">
           <a class="close" data-dismiss="alert" href="#">×</a><%= @alert %>

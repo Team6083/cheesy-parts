@@ -12,3 +12,5 @@ gem "rake"
 gem "sequel"
 gem "sinatra"
 gem "thin"
+
+gem 'rack-oauth2'
