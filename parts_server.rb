@@ -76,14 +76,14 @@ module CheesyParts
           token = client.access_token! :body
         rescue => e
           puts e
-          halt(400, "Error: Auth Failed")
+          redirect "/login?failed=2"
         end
 
         begin 
           response = token.get(CheesyCommon::Config.userinfo_endpoint)
         rescue => e
           puts e
-          halt(400, "Error: Auth Failed")
+          redirect "/login?failed=2"
         end
 
         user_info = response.body
@@ -93,7 +93,7 @@ module CheesyParts
         last_name = user_info[CheesyCommon::Config.userinfo_fields_last_name]
         roles = user_info[CheesyCommon::Config.userinfo_fields_roles]
 
-        halt(400, "Error: Roles is nil") if roles.nil?
+        redirect "/login?failed=3" if roles.nil?
 
         user = User.find_or_create(email: user_info['email']) do |u|
           u.first_name = first_name
@@ -140,6 +140,10 @@ module CheesyParts
 
       if params[:failed] == "1"
         @alert = "Invalid e-mail address or password."
+      if params[:failed] == "2"
+        @alert = "Get invalid token, please try again."
+      if params[:failed] == "3"
+        @alert = "You don't have access to this service."
       elsif params[:disabled] == "1"
         @alert = "Your account is currently disabled."
       end
