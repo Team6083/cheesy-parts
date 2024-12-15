@@ -75,13 +75,15 @@ module CheesyParts
         begin
           token = client.access_token! :body
         rescue => e
-          p e
+          puts e
+          halt(400, "Error: Auth Failed")
         end
 
         begin 
           response = token.get(CheesyCommon::Config.userinfo_endpoint)
         rescue => e
-          p e.response.headers[:www_authenticate]
+          puts e
+          halt(400, "Error: Auth Failed")
         end
 
         user_info = response.body
@@ -90,6 +92,8 @@ module CheesyParts
         first_name = user_info[CheesyCommon::Config.userinfo_fields_first_name]
         last_name = user_info[CheesyCommon::Config.userinfo_fields_last_name]
         roles = user_info[CheesyCommon::Config.userinfo_fields_roles]
+
+        halt(400, "Error: Roles is nil") if roles.nil?
 
         user = User.find_or_create(email: user_info['email']) do |u|
           u.first_name = first_name
