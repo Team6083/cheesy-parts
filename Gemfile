@@ -13,4 +13,5 @@ gem "sequel"
 gem "sinatra"
 gem "thin"
 
+gem 'net-smtp', require: false
 gem 'rack-oauth2'
