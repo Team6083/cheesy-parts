@@ -140,9 +140,9 @@ module CheesyParts
 
       if params[:failed] == "1"
         @alert = "Invalid e-mail address or password."
-      if params[:failed] == "2"
+      elsif params[:failed] == "2"
         @alert = "Get invalid token, please try again."
-      if params[:failed] == "3"
+      elsif params[:failed] == "3"
         @alert = "You don't have access to this service."
       elsif params[:disabled] == "1"
         @alert = "Your account is currently disabled."
