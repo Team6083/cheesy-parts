@@ -22,7 +22,7 @@ module CheesyParts
     # Enforce authentication for all routes except login and user registration.
     before do
       @user = User[session[:user_id]]
-      authenticate! unless ["/login", "/register", "/login/oauth2", "/login/oauth2/callback"].include?(request.path)
+      authenticate! unless ["/login", "/register", "/login/oauth2", "/login/oauth2/callback", "/api/v1/parts"].include?(request.path)
     end
 
     def authenticate!
@@ -112,6 +112,21 @@ module CheesyParts
         session[:user_id] = user.id
         redirect "/"
       end
+    end
+
+    get "/api/v1/parts" do
+      auth_header = request.env["HTTP_AUTHORIZATION"]
+      halt(401, "Unauthorized") unless auth_header && auth_header.start_with?("Token ")
+      token = auth_header.split(" ").last
+      halt(401, "Unauthorized") unless token == CheesyCommon::Config.api_token
+
+      content_type :json
+      parts = Part.where(:project_id => params[:project_id])
+      parts = parts.filter(:type => params[:type]) if params[:type]
+      parts = parts.filter(:status => params[:status]) if params[:status]
+      parts = parts.filter(:parent_part_id => params[:parent_part_id]) if params[:parent_part_id]
+      parts = parts.order(:id)
+      parts.to_json
     end
 
     get "/" do

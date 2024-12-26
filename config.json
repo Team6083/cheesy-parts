@@ -19,7 +19,8 @@
     "userinfo_fields_email": "email",
     "userinfo_fields_first_name": "given_name",
     "userinfo_fields_last_name": "family_name",
-    "userinfo_fields_roles": "roles"
+    "userinfo_fields_roles": "roles",
+    "api_token": "api-token"
   },
   "dev": {
     "db_password": "correcthorsebatterystaple",
